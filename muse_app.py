@@ -46,7 +46,7 @@ if st.button("🎯 Calculate Muse Score") and zip_input:
         ratio = agi / zip_agi
         muse_score = min(850, max(450, round(500 + (ratio - 1) * 300)))
 
-        # --- Tier ---
+        # --- Tier Assignment ---
         if muse_score >= 750:
             tier, color = "🟢 Excellent", "#4caf50"
         elif muse_score >= 650:
@@ -56,7 +56,7 @@ if st.button("🎯 Calculate Muse Score") and zip_input:
         else:
             tier, color = "🔴 Financial Stress", "#f44336"
 
-        # --- Gauge ---
+        # --- Gauge Visualization ---
         option = {
             "series": [{
                 "type": "gauge",
@@ -86,24 +86,24 @@ if st.button("🎯 Calculate Muse Score") and zip_input:
             }]
         }
 
-        # --- Display ---
+        # --- Display Score ---
         st.markdown("### 📈 Your Muse Score")
         st_echarts(options=option, height="300px")
         st.success(f"**{muse_score} — {tier}**", icon="💡")
 
-        # --- Insights ---
+        # --- Personalized insight ---
         messages = {
-            "🔴 Financial Stress": "Your income is significantly below your area's average. Focus on budgeting, income strategies, and cost control.",
-            "🟠 At Risk": "You're slightly below the average AGI for your ZIP. Build savings and prepare for rising costs.",
-            "🟡 Good": "You're in line with your area's average. Consider investing or optimizing your savings.",
-            "🟢 Excellent": "You're well above average. Explore wealth-building, tax optimization, and philanthropy."
+            "🔴 Financial Stress": "Your income is significantly below the average for your area. This may limit your ability to manage unexpected expenses or maintain standard living costs. Consider reviewing budgeting and income-boosting strategies.",
+            "🟠 At Risk": "You're slightly below the typical AGI for your ZIP code. While you may be managing, there's vulnerability to rising costs. Focus on building savings and reducing unnecessary spending.",
+            "🟡 Good": "You're financially aligned with or slightly above your local average. You’re on stable ground — now is a good time to optimize tax planning, investments, or savings.",
+            "🟢 Excellent": "You're well above the average income level for your area. This suggests strong financial resilience and the potential to build long-term wealth. Consider strategies for scaling savings, investing, or philanthropy."
         }
 
         st.markdown("---")
         st.subheader("💬 Personalized Financial Insight")
         st.markdown(f"<div style='color: {color}; font-size: 16px'>{messages[tier]}</div>", unsafe_allow_html=True)
 
-        # --- Summary Info Card ---
+        # --- Clean summary (without local avg AGI) ---
         st.markdown("---")
         st.subheader("🗂️ Summary")
         st.markdown(
