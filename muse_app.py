@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from streamlit_echarts import st_echarts
 
-# Load data
 @st.cache_data
 def load_data():
     df = pd.read_csv('zip_code_demographics.csv')
@@ -27,24 +26,22 @@ if st.button("🎯 Calculate Muse Score") and zip_input:
     else:
         row = df[df['zip'] == zip_input].iloc[0]
         zip_agi = row['adjusted_gross_income']
-
-        # ---- Muse Score Logic with Intervals ----
         ratio = agi / zip_agi if zip_agi > 0 else 0
 
-        if ratio < 0.8:
-            muse_score = 520
-            tier = "🔴 Financial Stress"
-        elif 0.8 <= ratio < 1.0:
-            muse_score = 580
-            tier = "🟠 At Risk"
-        elif 1.0 <= ratio < 1.2:
-            muse_score = 680
-            tier = "🟡 Good"
-        else:
-            muse_score = 770
-            tier = "🟢 Excellent"
+        # --- Scoring with multiplier ---
+        muse_score = min(850, max(450, round(500 + (ratio - 1) * 300)))
 
-        # ---- Meter Visualization ----
+        # --- Tier ---
+        if muse_score >= 750:
+            tier = "🟢 Excellent"
+        elif muse_score >= 650:
+            tier = "🟡 Good"
+        elif muse_score >= 550:
+            tier = "🟠 At Risk"
+        else:
+            tier = "🔴 Financial Stress"
+
+        # --- Meter Visualization ---
         option = {
             "series": [
                 {
@@ -77,17 +74,13 @@ if st.button("🎯 Calculate Muse Score") and zip_input:
             ]
         }
 
-        # ---- Output ----
         st_echarts(options=option, height="300px")
         st.success(f"🧠 Muse Score: **{muse_score}** — {tier}")
 
+        # --- Comparison Summary ---
         st.markdown("### 📊 Comparison Summary")
         st.write({
             'Your AGI': f"${agi:,.0f}",
-            'ZIP AGI': f"${zip_agi:,.0f}",
             'City': row['city'],
             'State': row['state_name'],
-            'Population': int(row['population']),
-            'Density': round(row['density'], 1),
-            'Businesses': int(row['number_of_business']),
         })
