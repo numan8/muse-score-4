@@ -1,65 +1,66 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Load ZIP-level data
 @st.cache_data
 def load_data():
-    return pd.read_csv('zip_code_demographics.csv')
+    df = pd.read_csv('zip_code_demographics.csv')
+    df['zip'] = df['zip'].astype(str).str.zfill(5)  # Ensure all ZIPs are 5-digit
+    return df
 
 df = load_data()
 
 # ---- UI ----
+st.set_page_config(page_title="Muse Score Calculator", layout="centered")
 st.title("Muse Score™ Calculator 💸")
-st.markdown("Estimate your financial efficiency based on AGI and ZIP location")
+st.markdown("Estimate your financial efficiency based on **Adjusted Gross Income (AGI)** and **ZIP Code** location.")
 
-agi = st.number_input("Enter your Adjusted Gross Income (AGI)", min_value=10000, max_value=500000, step=1000)
-zip_input = st.text_input("Enter your 5-digit ZIP Code (e.g. 10001)")
+agi = st.number_input("📥 Enter your Adjusted Gross Income (AGI)", min_value=10000, max_value=500000, step=1000)
+zip_input = st.text_input("📍 Enter your 5-digit ZIP Code (e.g. 10001)")
 
-if st.button("Calculate Muse Score") and zip_input:
-    if zip_input not in df['zip'].astype(str).values:
-        st.error("ZIP Code not found in dataset.")
+if st.button("🎯 Calculate Muse Score") and zip_input:
+    zip_input = zip_input.zfill(5)
+    
+    if zip_input not in df['zip'].values:
+        st.error("❌ ZIP Code not found in dataset.")
     else:
-        row = df[df['zip'].astype(str) == zip_input].iloc[0]
+        row = df[df['zip'] == zip_input].iloc[0]
+        zip_agi = row['adjusted_gross_income']
 
-        # --- Deterministic scoring using proxies ---
-        # Normalize fields
-        max_agi = df['adjusted_gross_income'].max()
-        max_density = df['density'].max()
-        income_per_cap = row['adjusted_gross_income'] / row['population']
-        max_income_per_cap = (df['adjusted_gross_income'] / df['population']).max()
-
-        agi_score = agi / max_agi
-        coli_score = 1 - (income_per_cap / max_income_per_cap)
-        density_score = 1 - (row['density'] / max_density)
-        housing_score = 1 - ((row['total_income_amount'] / row['population']) / max_income_per_cap)
-
-        # Weighted scoring (can be tuned)
-        raw_score = (
-            0.4 * agi_score +
-            0.2 * coli_score +
-            0.2 * density_score +
-            0.2 * housing_score
-        )
-
-        muse_score = round(350 + (raw_score * 500))
-
-        # Tier
-        if muse_score >= 750:
-            tier = "🟢 Excellent"
-        elif muse_score >= 650:
-            tier = "🟡 Good"
-        elif muse_score >= 550:
-            tier = "🟠 At Risk"
-        else:
+        # --- Scoring Logic ---
+        if agi < zip_agi * 0.8:
+            muse_score = 520
             tier = "🔴 Financial Stress"
+        elif agi < zip_agi:
+            muse_score = 580
+            tier = "🟠 At Risk"
+        elif agi < zip_agi * 1.2:
+            muse_score = 680
+            tier = "🟡 Good"
+        else:
+            muse_score = 770
+            tier = "🟢 Excellent"
 
-        # Output
+        # --- Display Results ---
         st.success(f"🧠 Your Muse Score: **{muse_score}**")
         st.markdown(f"Tier: **{tier}**")
-        st.write("**Component Scores:**")
+        
+        # Show comparison chart
+        fig, ax = plt.subplots()
+        bars = ax.bar(["Your AGI", "ZIP Median AGI"], [agi, zip_agi], width=0.4)
+        ax.set_ylabel("AGI ($)")
+        ax.set_title("AGI Comparison")
+        ax.bar_label(bars)
+        st.pyplot(fig)
+
+        # Show more ZIP insights
+        st.markdown("### 🗺️ ZIP Insights")
         st.write({
-            'AGI Score': round(agi_score, 2),
-            'COLI Score': round(coli_score, 2),
-            'Density Score': round(density_score, 2),
-            'Housing Score': round(housing_score, 2)
+            'City': row['city'],
+            'State': row['state_name'],
+            'Population': int(row['population']),
+            'AGI (ZIP)': f"${int(zip_agi):,}",
+            'Density': round(row['density'], 1),
+            'Businesses': int(row['number_of_business']),
         })
