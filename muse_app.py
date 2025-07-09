@@ -113,7 +113,6 @@ if st.button("🎯 Calculate Muse Score") and zip_input:
                 <b>ZIP Code:</b> {zip_input}<br>
                 <b>City:</b> {row['city']}<br>
                 <b>State:</b> {row['state_name']}<br>
-                <b>Local Avg AGI:</b> ${zip_agi:,.0f}<br>
             </div>
             """,
             unsafe_allow_html=True
