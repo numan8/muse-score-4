@@ -95,7 +95,6 @@ if st.button("🎯 Calculate Muse Score") and zip_input:
         st.markdown(f"💬 **Financial Insight:** {messages[tier]}")
 
         # --- Clean summary ---
-        st.markdown("### 📊 Comparison Summary")
         st.write({
             'Your AGI': f"${agi:,.0f}",
             'City': row['city'],
