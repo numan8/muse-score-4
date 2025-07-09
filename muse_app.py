@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from streamlit_echarts import st_echarts
 
+# Load data
 @st.cache_data
 def load_data():
     df = pd.read_csv('zip_code_demographics.csv')
@@ -41,7 +42,7 @@ if st.button("🎯 Calculate Muse Score") and zip_input:
         else:
             tier = "🔴 Financial Stress"
 
-        # --- Meter Visualization ---
+        # --- Gauge Visualization ---
         option = {
             "series": [
                 {
@@ -77,7 +78,17 @@ if st.button("🎯 Calculate Muse Score") and zip_input:
         st_echarts(options=option, height="300px")
         st.success(f"🧠 Muse Score: **{muse_score}** — {tier}")
 
-        # --- Comparison Summary ---
+        # --- Personalized Financial Insight ---
+        messages = {
+            "🔴 Financial Stress": "Your income is significantly below the average for your area. This may limit your ability to manage unexpected expenses or maintain standard living costs. Consider reviewing budgeting and income-boosting strategies.",
+            "🟠 At Risk": "You're slightly below the typical AGI for your ZIP code. While you may be managing, there's vulnerability to rising costs. Focus on building savings and reducing unnecessary spending.",
+            "🟡 Good": "You're financially aligned with or slightly above your local average. You’re on stable ground — now is a good time to optimize tax planning, investments, or savings.",
+            "🟢 Excellent": "You're well above the average income level for your area. This suggests strong financial resilience and the potential to build long-term wealth. Consider strategies for scaling savings, investing, or philanthropy."
+        }
+
+        st.markdown(f"💬 **Financial Insight:** {messages[tier]}")
+
+        # --- Clean Comparison Summary ---
         st.markdown("### 📊 Comparison Summary")
         st.write({
             'Your AGI': f"${agi:,.0f}",
